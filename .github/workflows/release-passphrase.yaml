@@ -1,0 +1,33 @@
+name: Replace NOT_RELEASED with Passphrase
+
+on:
+  push:
+    paths:
+      - 'passphrase'  # Triggers the workflow when the passphrase file is modified or created
+  workflow_dispatch:
+
+jobs:
+  replace_text:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4.1.5
+
+    - name: Read passphrase content
+      id: read_passphrase
+      run: |
+        passphrase=$(cat passphrase)
+        echo "PASSPHRASE=${passphrase}" >> $GITHUB_ENV
+
+    - name: Replace NOT_RELEASED with passphrase
+      run: |
+        sed -i "s/NOT_RELEASED/${{ env.PASSPHRASE }}/g" index.html
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add index.html
+        git commit -m "Replaced NOT_RELEASED with passphrase"
+        git push
